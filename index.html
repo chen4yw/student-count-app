@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Student Count by Country</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 40px auto; max-width: 760px; color: #1a1a1a; }
+    h1 { font-size: 22px; margin-bottom: 4px; }
+    p.sub { color: #666; font-size: 13px; margin-top: 0; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #e5e5e5; font-size: 14px; }
+    th { color: #666; font-weight: 500; }
+    td.count { text-align: right; font-weight: 600; width: 80px; }
+    .bar { display: inline-block; height: 8px; background: #2b7a78; border-radius: 4px; }
+    #status { color: #a33; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <h1>Student count by country</h1>
+  <p class="sub">Live from Azure SQL Database</p>
+  <p id="status">Loading…</p>
+  <table id="studentTable" hidden>
+    <thead>
+      <tr><th>Country</th><th class="count">Students</th><th></th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <p class="sub" id="total"></p>
+
+  <script>
+    async function fetchStudentData() {
+      const status = document.getElementById('status');
+      try {
+        const response = await fetch('/api/students');
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        const data = await response.json();
+        const max = Math.max(...data.map(r => r.StudentCount), 1);
+        const body = document.querySelector('#studentTable tbody');
+        body.innerHTML = data.map(row => `
+          <tr>
+            <td>${row.Country}</td>
+            <td class="count">${row.StudentCount}</td>
+            <td><span class="bar" style="width:${(row.StudentCount / max) * 260}px"></span></td>
+          </tr>`).join('');
+        const total = data.reduce((s, r) => s + r.StudentCount, 0);
+        document.getElementById('total').textContent =
+          `${data.length} countries, ${total} students total.`;
+        document.getElementById('studentTable').hidden = false;
+        status.hidden = true;
+      } catch (err) {
+        status.textContent =
+          'Could not load data (' + err.message + '). The serverless database may be resuming — please refresh in a few seconds.';
+      }
+    }
+    fetchStudentData();
+  </script>
+</body>
+</html>
