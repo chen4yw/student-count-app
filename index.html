@@ -29,52 +29,31 @@
   <p class="sub" id="total"></p>
 
   <script>
-    const data = [
-      {Country:"United States of America",StudentCount:193},
-      {Country:"Mexico",StudentCount:24},
-      {Country:"China",StudentCount:13},
-      {Country:"Japan",StudentCount:13},
-      {Country:"Brazil",StudentCount:9},
-      {Country:"India",StudentCount:8},
-      {Country:"Canada",StudentCount:7},
-      {Country:"Russian Federation",StudentCount:6},
-      {Country:"Colombia",StudentCount:5},
-      {Country:"Pakistan",StudentCount:3},
-      {Country:"Korea (Republic of)",StudentCount:3},
-      {Country:"Turkey",StudentCount:2},
-      {Country:"Spain",StudentCount:2},
-      {Country:"United Kingdom",StudentCount:2},
-      {Country:"Thailand",StudentCount:1},
-      {Country:"Tunisia",StudentCount:1},
-      {Country:"Ukraine",StudentCount:1},
-      {Country:"Peru",StudentCount:1},
-      {Country:"Philippines",StudentCount:1},
-      {Country:"Poland",StudentCount:1},
-      {Country:"Morocco",StudentCount:1},
-      {Country:"Myanmar",StudentCount:1},
-      {Country:"Netherlands",StudentCount:1},
-      {Country:"Nicaragua",StudentCount:1},
-      {Country:"Cuba",StudentCount:1},
-      {Country:"Dominican Republic",StudentCount:1},
-      {Country:"Egypt",StudentCount:1},
-      {Country:"El Salvador",StudentCount:1},
-      {Country:"Germany",StudentCount:1},
-      {Country:"Chile",StudentCount:1},
-      {Country:"Bangladesh",StudentCount:1}
-    ];
-    const max = Math.max(...data.map(r => r.StudentCount), 1);
-    const body = document.querySelector('#studentTable tbody');
-    body.innerHTML = data.map(row => `
-      <tr>
-        <td>${row.Country}</td>
-        <td class="count">${row.StudentCount}</td>
-        <td><span class="bar" style="width:${(row.StudentCount / max) * 260}px"></span></td>
-      </tr>`).join('');
-    const total = data.reduce((s, r) => s + r.StudentCount, 0);
-    document.getElementById('total').textContent =
-      `${data.length} countries, ${total} students total.`;
-    document.getElementById('studentTable').hidden = false;
-    document.getElementById('status').hidden = true;
+    async function fetchStudentData() {
+      const status = document.getElementById('status');
+      try {
+        const response = await fetch('/api/students');
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        const data = await response.json();
+        const max = Math.max(...data.map(r => r.StudentCount), 1);
+        const body = document.querySelector('#studentTable tbody');
+        body.innerHTML = data.map(row => `
+          <tr>
+            <td>${row.Country}</td>
+            <td class="count">${row.StudentCount}</td>
+            <td><span class="bar" style="width:${(row.StudentCount / max) * 260}px"></span></td>
+          </tr>`).join('');
+        const total = data.reduce((s, r) => s + r.StudentCount, 0);
+        document.getElementById('total').textContent =
+          `${data.length} countries, ${total} students total.`;
+        document.getElementById('studentTable').hidden = false;
+        status.hidden = true;
+      } catch (err) {
+        status.textContent =
+          'Could not load data (' + err.message + '). The serverless database may be resuming — please refresh in a few seconds.';
+      }
+    }
+    fetchStudentData();
   </script>
 </body>
 </html>
