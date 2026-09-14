@@ -1,0 +1,9 @@
+{
+  "name": "student-count-api",
+  "version": "1.0.0",
+  "description": "Managed API for Student Count by Country",
+  "main": "students/index.js",
+  "dependencies": {
+    "mssql": "^10.0.2"
+  }
+}
